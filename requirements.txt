@@ -1,0 +1,7 @@
+simplejson
+jinja2
+web
+sqlalchemy
+pybloom
+pipe
+Scrapy
