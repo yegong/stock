@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+__author__ = 'cooper'
 
 def chunks(l, n):
   """ Yield successive n-sized chunks from l.

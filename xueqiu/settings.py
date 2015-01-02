@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+__author__ = 'cooper'
 
 # Scrapy settings for xueqiu project
 #
@@ -31,3 +33,7 @@ ITEM_PIPELINES = {
 
 FEED_FORMAT = 'csv'
 FEED_URI = '%s/stock_symbol.csv' % beans['work_dir']
+LOG_ENABLED = True
+LOG_LEVEL = 'DEBUG'
+LOG_FILE = '%s/scrapy.log' % beans['work_dir']
+LOG_STDOUT = True
