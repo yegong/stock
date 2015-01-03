@@ -3,16 +3,19 @@
 __author__ = 'cooper'
 
 import traceback
-from common import inject
+import logging
+from threading import Thread
 from twisted.internet import reactor
 from scrapy.crawler import Crawler
 from scrapy import log, signals
 from scrapy.xlib.pydispatch import dispatcher
 from scrapy.exceptions import DontCloseSpider
-from xueqiu.spiders.hq_spider import HqSpider
 from scrapy.utils.project import get_project_settings
-from threading import Thread
 
+from xueqiu.spiders.hq_spider import HqSpider
+from common import inject, depends_on
+
+@depends_on('web')
 class ScrapySpider:
   def __init__(self):
     self.spider = HqSpider()
@@ -28,7 +31,8 @@ class ScrapySpider:
   def start(self):
     def run():
       try:
-        reactor.run()
+        logging.info('Start spider')
+        reactor.run(installSignalHandlers=False)
       except Exception, e:
         print traceback.format_exc()
     if not self._started:
@@ -36,6 +40,7 @@ class ScrapySpider:
       self.crawler.start()
       log.start_from_settings(get_project_settings())
       self.thread = Thread(target=run)
+      log.msg('Start')
       self.thread.start()
     else:
       raise Exception('spider has already started.')
@@ -46,6 +51,7 @@ class ScrapySpider:
     elif self._stopped:
       raise Exception('spider has already stopped')
     else:
+      log.msg('Stop')
       self._stopped = True
       self.crawler.stop()
 

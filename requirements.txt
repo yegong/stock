@@ -1,6 +1,6 @@
 simplejson
 jinja2
-web2py
+tornado
 sqlalchemy
 pybloom
 pipe

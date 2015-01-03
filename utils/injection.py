@@ -3,6 +3,7 @@
 __author__ = 'cooper'
 
 import inspect
+import logging
 
 from utils.decorator import private
 from utils.collections import *
@@ -41,6 +42,18 @@ def factory_bean(factory):
   """
   return 'factory_bean', factory
 
+def depends_on(dependencies):
+  if type(dependencies) == str:
+    dependencies = [dependencies]
+  def decorator(method):
+    deps = []
+    if (hasattr(method, '__injected_dependencies__')):
+      deps = getattr(method, '__injected_dependencies__')
+    deps += dependencies
+    deps = list(set(deps))
+    setattr(method, '__injected_dependencies__', deps)
+    return method
+  return decorator
 
 class InjectionException(Exception):
   def __init__(self, message):
@@ -79,7 +92,11 @@ class ApplicationContextBuilder:
         def decorated_method(*args, **kwargs):
           return self.invoke_injected_method(method, injections, *args, **kwargs)
 
-        setattr(decorated_method, '__injected_dependencies__', injections)
+        deps = injections
+        if hasattr(method, '__injected_dependencies__'):
+          deps += getattr(method, '__injected_dependencies__')
+          deps = list(set(deps))
+        setattr(decorated_method, '__injected_dependencies__', deps)
         return decorated_method
 
       return decorator
@@ -103,7 +120,11 @@ class ApplicationContextBuilder:
       def decorated_method(*args, **kwargs):
         return self.invoke_injected_method(method, injections, *args, **kwargs)
 
-      setattr(decorated_method, '__injected_dependencies__', [])
+      deps = injections
+      if hasattr(method, '__injected_dependencies__'):
+        deps += getattr(method, '__injected_dependencies__')
+        deps = list(set(deps))
+      setattr(decorated_method, '__injected_dependencies__', deps)
       return decorated_method
 
     return decorator
@@ -133,35 +154,41 @@ class ApplicationContextBuilder:
       if bean_name in stack:
         raise Exception("CycleDependencyException " + str(stack))
       stack.append(bean_name)
-      bean = instantise(bean_configuration, stack)
+      bean = instantise(bean_name, bean_configuration, stack)
       self.beans[bean_name] = bean
       stack.pop()
 
-    def process_dependencies(target, stack):
-      for bean_name, bean_configuration in check_dependencies(target):
+    def process_dependencies(bean_name, target, stack):
+      for bean_name, bean_configuration in check_dependencies(bean_name, target):
         create_bean(bean_name, bean_configuration, stack)
 
-    def check_dependencies(target):
+    def check_dependencies(bean_name, target):
       deps = []
       if hasattr(target, '__injected_dependencies__'):
         deps += getattr(target, '__injected_dependencies__')
       elif inspect.isclass(target) and hasattr(target, '__init__'):
         init_method = getattr(target, '__init__')
-        deps += check_dependencies(init_method)
+        if hasattr(target.__init__, '__injected_dependencies__'):
+          deps += getattr(target.__init__, '__injected_dependencies__')
+      logging.info('%s depends on %s' % (bean_name, ','.join(deps)))
       return [(bean_name, bean_configuration) for bean_name, bean_configuration in self.configurations if bean_name in deps]
 
-    def instantise(details, stack):
+    def instantise(bean_name, details, stack):
       def_type, value = details
       if def_type == 'value':
+        logging.info('create %s' % bean_name)
         return value
       if def_type == 'value_factory':
-        process_dependencies(value, stack)
+        process_dependencies(bean_name, value, stack)
+        logging.info('create %s' % bean_name)
         return value()
       target = get_target(value)
       if def_type == 'bean':
+        logging.info('create %s' % bean_name)
         return target
       elif def_type == 'factory_bean':
-        process_dependencies(target, stack)
+        process_dependencies(bean_name, target, stack)
+        logging.info('create %s' % bean_name)
         return target()
       raise InjectionException('Cannot instantise: ' + value)
 

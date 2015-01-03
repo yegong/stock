@@ -4,18 +4,25 @@ __author__ = 'cooper'
 
 import logging.config
 
-urls = (
-  '/', 'yacai.web.controllers.index.Index',
-)
 
 if __name__ == '__main__':
   import common
-
   logging.config.fileConfig('logging.conf')
   assert common.appctx.bean_configured
   
-  common.beans['spider'].start()
 
-  import web
-  app = web.application(urls, globals())
-  app.run()
+  import signal
+  import sys
+  def signal_handler(signal, frame):
+    logging.info('Stop spider')
+    common.beans['spider'].stop()
+    logging.info('Stop web')
+    common.beans['web'].stop()
+    logging.info('Exit')
+    sys.exit(0)
+  signal.signal(signal.SIGINT, signal_handler)
+
+  common.beans['spider'].start() #async
+  common.beans['web'].start() #sync
+  
+

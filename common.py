@@ -17,6 +17,7 @@ appctx = ApplicationContextBuilder([
   ('sql_meta_data', factory_bean('providers.database.meta_data')),
   ('work_dir', value('/Users/cooper/tmp/work')),
   ('spider', factory_bean('providers.spider.ScrapySpider')),
+  ('web', factory_bean('providers.web.TornadoWeb')),
 ])
 inject = appctx.injector()
 autowired = appctx.auto_injector()
