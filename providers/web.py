@@ -6,19 +6,45 @@ import logging
 import traceback
 import tornado.ioloop
 import tornado.web
-from common import inject
+import os
+import mako.lookup
+import mako.template
+from common import autowired, depends_on
 
-class MainHandler(tornado.web.RequestHandler):
-  def get(self):
-    self.write("Hello, world")
+class MakoHandler(tornado.web.RequestHandler):
+  def initialize(self):
+    template_path = self.get_template_path()
+    self.lookup = mako.lookup.TemplateLookup(directories=[template_path], input_encoding='utf-8', output_encoding='utf-8')
+
+  def render_string(self, filename, **kwargs):
+    template = self.lookup.get_template(filename)
+    namespace = self.get_template_namespace()
+    namespace.update(kwargs)
+    return template.render(**namespace)
+
+  def render(self, filename, **kwargs):
+    self.finish(self.render_string(filename, **kwargs))
+
+class MainHandler(MakoHandler):
+  @autowired
+  def get(self, sql_engine):
+    with sql_engine.connect() as conn:
+      from model.stock import stocks
+      count = conn.execute(stocks.count()).first()
+      self.render('index.html', title='Hello', body=str(count))
 
 routes = [
   ('/', MainHandler),
 ]
 
+settings = {
+  'template_path' : os.path.join(os.path.dirname(__file__), '..', 'templates')
+}
+
+@depends_on('sql_engine')
 class TornadoWeb:
   def __init__(self):
-    self.application = tornado.web.Application(routes)
+    self.application = tornado.web.Application(routes, **settings)
     self.ioloop = tornado.ioloop.IOLoop.instance()
     self._started = False
     self._stopped = False

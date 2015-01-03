@@ -170,7 +170,8 @@ class ApplicationContextBuilder:
         init_method = getattr(target, '__init__')
         if hasattr(target.__init__, '__injected_dependencies__'):
           deps += getattr(target.__init__, '__injected_dependencies__')
-      logging.info('%s depends on %s' % (bean_name, ','.join(deps)))
+      if len(deps) > 0:
+        logging.info('%s depends on %s' % (bean_name, ','.join(deps)))
       return [(bean_name, bean_configuration) for bean_name, bean_configuration in self.configurations if bean_name in deps]
 
     def instantise(bean_name, details, stack):
