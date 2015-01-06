@@ -15,14 +15,14 @@ if __name__ == '__main__':
   import sys
   def signal_handler(signal, frame):
     logging.info('Stop spider')
-    common.beans['spider'].stop()
+    common.beans.spider_container.stop()
     logging.info('Stop web')
-    common.beans['web'].stop()
+    common.beans.web_container.stop()
     logging.info('Exit')
     sys.exit(0)
   signal.signal(signal.SIGINT, signal_handler)
 
-  common.beans['spider'].start() #async
-  common.beans['web'].start() #sync
+  common.beans.spider_container.start() #async
+  common.beans.web_container.start() #sync
   
 

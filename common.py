@@ -13,11 +13,11 @@ logging.config.fileConfig('logging.conf')
 
 appctx = ApplicationContextBuilder([
   ('database_url', value('mysql://python_dev:vao8Je1o@localhost/stock_dev')),
+  ('working_dir', value('/Users/cooper/tmp/work')),
   ('sql_engine', factory_bean('providers.database.engine')),
   ('sql_meta_data', factory_bean('providers.database.meta_data')),
-  ('work_dir', value('/Users/cooper/tmp/work')),
-  ('spider', factory_bean('providers.spider.ScrapySpider')),
-  ('web', factory_bean('providers.web.TornadoWeb')),
+  ('spider_container', factory_bean('providers.spider.ScrapySpider')),
+  ('web_container', factory_bean('providers.web.TornadoWeb')),
 ])
 inject = appctx.injector()
 autowired = appctx.auto_injector()

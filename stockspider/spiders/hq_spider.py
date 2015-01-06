@@ -3,7 +3,7 @@
 __author__ = 'cooper'
 import scrapy, json
 import utils
-from xueqiu.items import *
+from stockspider.items import *
 
 class HqSpider(scrapy.Spider):
   name = "hq"

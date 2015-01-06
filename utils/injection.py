@@ -70,7 +70,8 @@ class ApplicationContextBuilder:
   def __init__(self, configurations):
     self.configurations = configurations
     self.bean_names = first(configurations)
-    self.beans = dict()
+    self.beans_map = dict()
+    self.beans = lambda: None
     self.bean_configured = False
 
   def injector(self):
@@ -92,10 +93,9 @@ class ApplicationContextBuilder:
         def decorated_method(*args, **kwargs):
           return self.invoke_injected_method(method, injections, *args, **kwargs)
 
-        deps = injections
-        if hasattr(method, '__injected_dependencies__'):
-          deps += getattr(method, '__injected_dependencies__')
-          deps = list(set(deps))
+        deps = list(injections)
+        deps += getattr(method, '__injected_dependencies__', [])
+        deps = list(set(deps))
         setattr(decorated_method, '__injected_dependencies__', deps)
         return decorated_method
 
@@ -121,9 +121,8 @@ class ApplicationContextBuilder:
         return self.invoke_injected_method(method, injections, *args, **kwargs)
 
       deps = injections
-      if hasattr(method, '__injected_dependencies__'):
-        deps += getattr(method, '__injected_dependencies__')
-        deps = list(set(deps))
+      deps += getattr(method, '__injected_dependencies__', [])
+      deps = list(set(deps))
       setattr(decorated_method, '__injected_dependencies__', deps)
       return decorated_method
 
@@ -134,7 +133,7 @@ class ApplicationContextBuilder:
     if not self.bean_configured:
       raise InjectionException('ApplicationContext is not configured yet')
     for name in injections:
-      bean = self.beans[name]
+      bean = self.beans_map[name]
       if bean is None:
         raise InjectionException('Dependency not found in runtime: ' + name)
       kwargs[name] = bean
@@ -149,13 +148,14 @@ class ApplicationContextBuilder:
         create_bean(bean_name, bean_configuration, [])
 
     def create_bean(bean_name, bean_configuration, stack):
-      if bean_name in self.beans:
+      if bean_name in self.beans_map:
         return
       if bean_name in stack:
         raise Exception("CycleDependencyException " + str(stack))
       stack.append(bean_name)
       bean = instantise(bean_name, bean_configuration, stack)
-      self.beans[bean_name] = bean
+      self.beans_map[bean_name] = bean
+      setattr(self.beans, bean_name, bean)
       stack.pop()
 
     def process_dependencies(bean_name, target, stack):
@@ -164,12 +164,10 @@ class ApplicationContextBuilder:
 
     def check_dependencies(bean_name, target):
       deps = []
-      if hasattr(target, '__injected_dependencies__'):
-        deps += getattr(target, '__injected_dependencies__')
-      elif inspect.isclass(target) and hasattr(target, '__init__'):
+      deps += getattr(target, '__injected_dependencies__', [])
+      if inspect.isclass(target) and hasattr(target, '__init__'):
         init_method = getattr(target, '__init__')
-        if hasattr(target.__init__, '__injected_dependencies__'):
-          deps += getattr(target.__init__, '__injected_dependencies__')
+        deps += getattr(target.__init__, '__injected_dependencies__', [])
       if len(deps) > 0:
         logging.info('%s depends on %s' % (bean_name, ','.join(deps)))
       return [(bean_name, bean_configuration) for bean_name, bean_configuration in self.configurations if bean_name in deps]

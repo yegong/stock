@@ -24,16 +24,16 @@ DEFAULT_REQUEST_HEADERS = {
     'DNT': '1',
 }
 
-SPIDER_MODULES = ['xueqiu.spiders']
-NEWSPIDER_MODULE = 'xueqiu.spiders'
+SPIDER_MODULES = ['stockspider.spiders']
+NEWSPIDER_MODULE = 'stockspider.spiders'
 
 ITEM_PIPELINES = {
-    'xueqiu.pipelines.CatelogFilterPipeline': 300,
+    'stockspider.pipelines.CatelogFilterPipeline': 300,
 }
 
-FEED_FORMAT = 'csv'
-FEED_URI = '%s/stock_symbol.csv' % beans['work_dir']
+#FEED_FORMAT = 'csv'
+#FEED_URI = '%s/stock_symbol.csv' % beans.working_dir
 LOG_ENABLED = True
 LOG_LEVEL = 'INFO'
-LOG_FILE = '%s/scrapy.log' % beans['work_dir']
+LOG_FILE = '%s/scrapy.log' % beans.working_dir
 LOG_STDOUT = False

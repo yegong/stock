@@ -12,10 +12,10 @@ from scrapy.xlib.pydispatch import dispatcher
 from scrapy.exceptions import DontCloseSpider
 from scrapy.utils.project import get_project_settings
 
-from xueqiu.spiders.hq_spider import HqSpider
+from stockspider.spiders.hq_spider import HqSpider
 from common import inject, depends_on
 
-@depends_on('web')
+@depends_on('sql_engine')
 class ScrapySpider:
   def __init__(self):
     self.spider = HqSpider()
