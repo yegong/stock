@@ -12,15 +12,22 @@ CREATE TABLE `stocks` (
 	UNIQUE KEY `ux_symbol` (`symbol`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `stock_days` (
+CREATE TABLE `stock_k_line_days` (
 	`id` int(11) NOT NULL AUTO_INCREMENT,
 	`symbol` varchar(32) NOT NULL,
 	`day` date NOT NULL,
-	`open_price` decimal(10,2) NOT NULL,
-	`close_price` decimal(10,2) NOT NULL,
-	`high_price` decimal(10,2) NOT NULL,
-	`low_price` decimal(10,2) NOT NULL,
-	`volumn` decimal(10,2) NOT NULL,
+	`open_price` decimal(15,4) NOT NULL,
+	`close_price` decimal(15,4) NOT NULL,
+	`low_price` decimal(15,4) NOT NULL,
+	`high_price` decimal(15,4) NOT NULL,
+	`delta_price` decimal(15,4) NOT NULL,
+	`turn_rate` decimal(15,4) NOT NULL,
+	`delta_percent` decimal(15,4) NOT NULL,
+	`volume` decimal(20,2) NOT NULL,
+	`ma5` decimal(15,4) NULL,
+	`ma10` decimal(15,4) NULL,
+	`ma20` decimal(15,4) NULL,
+	`ma30` decimal(15,4) NULL,
 	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),

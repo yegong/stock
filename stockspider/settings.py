@@ -28,7 +28,8 @@ SPIDER_MODULES = ['stockspider.spiders']
 NEWSPIDER_MODULE = 'stockspider.spiders'
 
 ITEM_PIPELINES = {
-    'stockspider.pipelines.CatelogFilterPipeline': 300,
+    'stockspider.pipelines.StockPipeline': 300,
+    'stockspider.pipelines.StockKLineDayPipeline': 300,
 }
 
 #FEED_FORMAT = 'csv'

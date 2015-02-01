@@ -4,9 +4,10 @@ __author__ = 'cooper'
 
 import json
 from common import autowired
-from model.stock import Stocks
+from model.stock import Stocks, StockKLineDays
+from stockspider.items import *
 
-class CatelogFilterPipeline(object):
+class StockPipeline(object):
 
   @autowired
   def __init__(self, sql_engine):
@@ -19,13 +20,25 @@ class CatelogFilterPipeline(object):
 
   @autowired
   def process_item(self, item, spider, sql_engine):
+    if type(item) != StockItem:
+      return
     symbol = item['symbol']
     if (symbol not in self.stock_symbols):
       self.stock_symbols.add(symbol)
       sql = Stocks.insert().values(**item)
       with sql_engine.connect() as conn:
         conn.execute(sql)
-    if not item['catelog']:
-      raise DropItem("Unknown catelog item found: %s" % symbol)
+    return item
+
+class StockKLineDayPipeline(object):
+
+  @autowired
+  def process_item(self, item, spider, sql_engine):
+    if type(item) != StockKLineDayItem:
+      return
+    symbol = item['symbol']
+    sql = StockKLineDays.insert(mysql_replace_into='').values(**item)
+    with sql_engine.connect() as conn:
+      conn.execute(sql)
     return item
 

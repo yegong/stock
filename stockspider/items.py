@@ -39,8 +39,24 @@ def getcatelog(symbol):
       return catelog
   return None
 
-class StockSymbolItem(scrapy.Item):
+class StockItem(scrapy.Item):
   name = scrapy.Field()
   symbol = scrapy.Field()
   market = scrapy.Field()
   catelog = scrapy.Field()
+
+class StockKLineDayItem(scrapy.Item):
+  symbol = scrapy.Field()
+  day = scrapy.Field()
+  open_price = scrapy.Field()
+  close_price = scrapy.Field()
+  low_price = scrapy.Field()
+  high_price = scrapy.Field()
+  delta_price = scrapy.Field()
+  turn_rate = scrapy.Field()
+  delta_percent = scrapy.Field()
+  volume = scrapy.Field()
+  ma5 = scrapy.Field()
+  ma10 = scrapy.Field()
+  ma20 = scrapy.Field()
+  ma30 = scrapy.Field()
