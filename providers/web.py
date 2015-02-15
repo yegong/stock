@@ -27,11 +27,8 @@ class MakoHandler(tornado.web.RequestHandler):
 
 class MainHandler(MakoHandler):
   @autowired
-  def get(self, sql_engine):
-    with sql_engine.connect() as conn:
-      from model.stock import Stocks
-      count = conn.execute(Stocks.count()).first()
-      self.render('index.html', title='Hello', body=str(count))
+  def get(self):
+    self.render('index.html', title='Hello', body=0)
 
 routes = [
   ('/', MainHandler),

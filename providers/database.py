@@ -5,15 +5,24 @@ __author__ = 'cooper'
 from common import inject
 
 
-@inject('database_url')
-def engine(database_url):
+@inject('mysql_url')
+def sql_engine(mysql_url):
   from sqlalchemy import create_engine
-  return create_engine(database_url)
+  return create_engine(mysql_url)
 
 @inject('sql_engine')
-def meta_data(sql_engine):
+def sql_meta_data(sql_engine):
   from sqlalchemy import MetaData
   return MetaData(sql_engine)
+
+@inject('mongo_url')
+def mongo_client(mongo_url):
+  from pymongo import MongoClient
+  return MongoClient(mongo_url)
+
+@inject('mongo_client')
+def mongo_db(mongo_client):
+  return mongo_client['stock_dev']
 
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.expression import Insert

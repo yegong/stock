@@ -50,14 +50,25 @@ class HqSpider(scrapy.Spider):
       item['market'] = getmarket(stock['symbol'])
       item['catelog'] = getcatelog(stock['symbol'])
       yield item
+
+      request = scrapy.Request("http://xueqiu.com/stock/industry/stockList.json?type=1&code=%s&size=0" % (stock['symbol']), 
+          cookies=self.get_cookies(),
+          callback=self.parse_hq_stock_category)
+      yield request
       
       if item['market'] == 'PRE':
         continue
 
+      request = scrapy.Request("http://xueqiu.com/v4/stock/quote.json?code=%s&_=1" % (stock['symbol']), 
+          meta={'symbol': stock['symbol']},
+          cookies=self.get_cookies(),
+          callback=self.parse_hq_stock_basic)
+      yield request
+
       request = scrapy.Request("http://xueqiu.com/S/%s" % stock['symbol'], 
           cookies=self.get_cookies(),
           callback=self.parse_hq_stock)
-      yield request
+      # yield request
 
       import datetime
       from dateutil.relativedelta import relativedelta
@@ -70,6 +81,33 @@ class HqSpider(scrapy.Spider):
           cookies=self.get_cookies(),
           callback=self.parse_hq_stock_k_1d)
       yield request
+
+  def parse_hq_stock_category(self, response):
+    json_response = json.loads(response.body_as_unicode())
+    if 'industryname' not in json_response:
+      log.msg('parse_hq_category parse failed')
+    item = StockItem()
+    item['symbol'] = json_response['code']
+    item['xq_category'] = json_response['industryname']
+    item['zjh_category'] = ''
+    yield item
+
+  def parse_hq_stock_basic(self, response):
+    json_response = json.loads(response.body_as_unicode())
+    item = StockItem()
+    symbol = response.meta['symbol']
+    value = json_response[symbol]
+    item['symbol'] = symbol
+    item['eps'] = float(value.get('eps', 0) or 0) or None
+    item['pe_ttm'] = float(value.get('pe_ttm', 0) or 0) or None
+    item['pe_lyr'] = float(value.get('pe_lyr', 0) or 0) or None
+    item['net_assets'] = float(value.get('net_assets', 0) or 0) or None
+    item['pb'] = float(value.get('pb', 0) or 0) or None
+    item['rise_stop'] = float(value.get('rise_stop', 0) or 0) or None
+    item['fall_stop'] = float(value.get('fall_stop', 0) or 0) or None
+    item['market_capital'] = float(value.get('marketCapital', 0) or 0) or None
+    item['exchangeable_market_capital'] = float(value.get('float_market_capital', 0) or 0) or None
+    yield item
     
   def parse_hq_stock(self, response):
     for td in response.xpath('//table[@class="topTable"]/tr/td').extract():

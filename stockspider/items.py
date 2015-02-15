@@ -44,6 +44,19 @@ class StockItem(scrapy.Item):
   symbol = scrapy.Field()
   market = scrapy.Field()
   catelog = scrapy.Field()
+  #
+  xq_category = scrapy.Field()
+  zjh_category = scrapy.Field()
+  #
+  eps = scrapy.Field()
+  pe_ttm = scrapy.Field()
+  pe_lyr = scrapy.Field()
+  net_assets = scrapy.Field()
+  pb = scrapy.Field()
+  rise_stop = scrapy.Field()
+  fall_stop = scrapy.Field()
+  market_capital = scrapy.Field()
+  exchangeable_market_capital = scrapy.Field()
 
 class StockKLineDayItem(scrapy.Item):
   symbol = scrapy.Field()
